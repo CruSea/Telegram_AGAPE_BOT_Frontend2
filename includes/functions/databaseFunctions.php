@@ -19,6 +19,26 @@ class databaseAPI
         $data = $q->fetch(PDO::FETCH_ASSOC);
         return $data['Name'];
     }
+
+    public function get_Menu_ID($menuName,$connection)
+    {
+
+        $sql = 'SELECT * FROM Menus where Name = ?';
+        $q= $connection->prepare($sql);
+        $q->execute(array($menuName));
+        $data = $q->fetch(PDO::FETCH_ASSOC);
+        return $data['Menu_ID'];
+
+    }
+
+    public function get_Menu_Name($menuID,$connection)
+    {
+        $sql = 'SELECT * FROM Menus where Menu_ID = ?';
+        $q= $connection->prepare($sql);
+        $q->execute(array($menuID));
+        $data = $q->fetch(PDO::FETCH_ASSOC);
+        return $data['Name'];
+    }
     //Getting Discussion topic using discussion number
     public function Discussion_Topic($discussionNo,$pdo)
     {

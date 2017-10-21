@@ -33,7 +33,7 @@ Smartphone Compatible Educational Website" />
 			<div class="header-top">
 				
 				<div class="logo">
-					<h1><a href="index.html"><span>#Hack</span> 2017 Telegram Bot Managment System</a></h1>
+					<h1><a href="index.html"><span>#Hack</span> 2017 Telegram Bot</a></h1>
 				
 				</div>
 				
