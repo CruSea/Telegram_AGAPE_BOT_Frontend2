@@ -4,7 +4,7 @@ session_start();
 
 $DB_host = "localhost";
 $DB_user = "root";
-$DB_pass = "passnegarit";
+$DB_pass = "";
 $DB_name = "telegrambots";
 
 try

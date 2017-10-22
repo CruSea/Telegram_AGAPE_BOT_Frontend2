@@ -215,7 +215,7 @@
         ?>
         <?php include("../includes/layouts/header.php");?><!--Including header.php File From includes/layouts Directory-->
         <ul><!--The Beginning of Navigation Bar Menus-->
-            <li class="active"><a href="#" >Manage Bots</a></li>
+            <li class="active"><a href="index.php?page=bots" >Manage Bots</a></li>
             <li><a href="#" >About Us</a></li>
             <li><a href="#" >Contact Us</a></li>
             <li><a href="#" >Logout</a></li>
