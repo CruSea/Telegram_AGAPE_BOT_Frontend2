@@ -103,7 +103,7 @@
                     $sql = "INSERT INTO Menus (Bot_ID,Name,Description,Is_Starter) VALUES (?,?,?,?)";
                     $q = $connection->prepare($sql);
                     $q->execute(array($botID,$menuName,$menuDesc,$starter));
-                    header("Location: index.php?page=viewMenu&botSelected=".$botSelected."");
+                    header("Location: index.php?page=bots");
                 }
             }
             else if($page=='subMenu')
@@ -141,7 +141,7 @@
                     $sql = "INSERT INTO Sub_Menus (Menu_ID,Name,Content,Replay) VALUES (?,?,?,?)";
                     $q = $connection->prepare($sql);
                     $q->execute(array($menuID,$subName,$content,$replay));
-                    header("Location: index.php?page=viewSubMenu&menuSelected=".$menuSelected."&botSelected=".$botSelected."");
+                    header("Location: index.php?page=viewMenu&botSelected=".$botSelected."");
                 }
 
             }
@@ -180,7 +180,7 @@
         }
         else
         {
-            if($page=='addNewBot'||$page=='bots')
+            if($page=='addNewBot'||$page=='bots'||$page=='addMenu')
             {   
                 $sql = "SELECT * FROM Bots ";
                 $q = $connection->prepare($sql);
@@ -189,7 +189,7 @@
                 $data = $q->fetch(PDO::FETCH_ASSOC);
                 $count=$q->rowCount();
             }
-            else if($page=='viewMenu'||$page=='addMenu')
+            else if($page=='viewMenu'||$page=='addSubMenu')
             {
                 $botID = $api->get_Bot_ID($botSelected,$connection);
                 $sql = "SELECT * FROM Menus Where Bot_ID = ?";
@@ -199,7 +199,7 @@
                 $data = $q->fetch(PDO::FETCH_ASSOC);
                 $count=$q->rowCount();
             }
-            else if($page=='viewSubMenu'||$page=='addSubMenu')
+            else if($page=='viewSubMenu')
             {
                 $menuID = $api->get_Menu_ID($menuSelected,$connection);
                 $sql = "SELECT * FROM Sub_Menus Where Menu_ID = ?";
@@ -241,14 +241,12 @@
         <!--Beginning of forums by status well-->
         <?php 
             echo '<div class="well">';
-            if($page=='viewMenu'||$page=='addMenu')
+            if($page=='viewMenu')
             {
-                echo '<p><a href="index.php?page=addMenu&botSelected='.$botSelected.'">+ Add Menu</a></p>';
                 echo '<p><a href="index.php?page=bots">Manage Bots</a></p>';
             }
-            else if($page=='viewSubMenu'||$page=='addSubMenu')
+            else if($page=='viewSubMenu')
             {
-                echo '<p><a href="index.php?page=addSubMenu&menuSelected='.$menuSelected.'&botSelected='.$botSelected.'">+ Add Sub Menu</a></p>';
                 echo '<p><a href="index.php?page=bots">Manage Bots</a></p>';
             }
             else
@@ -267,7 +265,7 @@
         <!--The Beginning of Row div-->
         <div class="row">
         <?php 
-        if($page=='addNewBot'||$page=='bots')
+        if($page=='addNewBot'||$page=='bots'||$page=='addMenu')
         {
             $no=1;//For Numbering
            
@@ -294,7 +292,9 @@
             echo '<td>'.$row['Description'].'</td>';
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
-            echo '<td width=180 class="text-center">';
+            echo '<td width=280 class="text-center">';
+            echo '<a class="btn btn-default" href="index.php?page=addMenu&botSelected='.$row['Name'].'">Add Menu</a>';
+            echo ' ';
             echo '<a class="btn btn-default" href="index.php?page=viewMenu&botSelected='.$row['Name'].'">Menus</a>';
             echo ' ';
             echo '<a class="btn btn-danger" href="index.php?page=bots&IDTempo='.$row['Bot_ID'].'&delete=bot">-Remove</a>';
@@ -320,7 +320,7 @@
             if ($prev >= 0)
             echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=bots"><< Previous </a>';
         }
-        else if($page=='viewMenu'||$page=='addMenu')
+        else if($page=='viewMenu'||$page=='addSubMenu')
         {
 
             $no=1;//For Numbering
@@ -333,7 +333,7 @@
             echo '<th>NO.</th>';
             echo '<th>Bot</th>';
             echo '<th>Menu Name</th>';
-            echo '<th>Description</th>';
+            echo '<th>Content</th>';
             echo '<th>Actions</th>';
             echo '</tr>';
             echo '</thead>';//The End Of Table Header
@@ -348,7 +348,9 @@
             echo '<td>'.$row['Description'].'</td>';
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
-            echo '<td width=200 class="text-center">';
+            echo '<td width=350 class="text-center">';
+            echo '<a class="btn btn-default" href="index.php?page=addSubMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'">Add Sub Menu</a>';
+            echo ' ';
             echo '<a class="btn btn-default" href="index.php?page=viewSubMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'">Sub Menus</a>';
             echo ' ';
             echo '<a class="btn btn-danger" href="index.php?page=viewMenu&IDTempo='.$row['Menu_ID'].'&botSelected='.$botSelected.'&delete=menu">-Remove</a>';
@@ -372,7 +374,7 @@
             echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=viewMenu&botSelected='.$botSelected.'"><< Previous</a>';
             
         }
-        else if($page=='viewSubMenu'||$page=='addSubMenu')
+        else if($page=='viewSubMenu')
         {
             $no=1;//For Numbering
 
@@ -402,7 +404,7 @@
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
             echo '<td width=100 class="text-center">';
-            echo '<a class="btn btn-danger" href="index.php?page=viewSubMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'&IDTempo='.$row['Sub_Menu_ID'].'&delete=sub">-Remove</a>';
+            echo '<a class="btn btn-danger" href="index.php?page=viewSubMenu&menuSelected='.$menuSelected.'&botSelected='.$botSelected.'&IDTempo='.$row['Sub_Menu_ID'].'&delete=sub">-Remove</a>';
             echo '</td>';
             echo '</tr>';
             
@@ -505,8 +507,8 @@
             //Description Form Group Begin Here
             echo '<div class="form-group ';
             echo '">';
-            echo '<label class="control-label col-md-3" for="botDesc">Description</label><div class="col-md-6">';
-            echo '<input type="text" class="form-control" id="botDesc" placeholder="Enter Description?" name="botDesc">';
+            echo '<label class="control-label col-md-3" for="botDesc">Content</label><div class="col-md-6">';
+            echo '<textarea class="form-control " rows="5" id="botDesc" name="botDesc" placeholder="Enter Content Here?"></textarea>';
             echo '</div>';
             echo '</div>';
             //Description form Group End Here
@@ -574,8 +576,8 @@
             //Description Form Group Begin Here
             echo '<div class="form-group ';
             echo '">';
-            echo '<label class="control-label col-md-3" for="menuDesc">Description</label><div class="col-md-6">';
-            echo '<input type="text" class="form-control" id="menuDesc" placeholder="Enter Description?" name="menuDesc">';
+            echo '<label class="control-label col-md-3" for="menuDesc">Content</label><div class="col-md-6">';
+            echo '<textarea class="form-control " rows="5" id="menuDesc" name="menuDesc" placeholder="Enter Content Here?"></textarea>';
             echo '</div>';
             echo '</div>';
             //Description form Group End Here
@@ -639,7 +641,7 @@
         <div class="modal-body">
         <!--Add New Bot Form Begin Here-->
         <?php 
-        echo '<form class="form-horizontal" role="form" action="index.php?page=subMenu&menuSelected='.$menuSelected.'" method="post">';
+        echo '<form class="form-horizontal" role="form" action="index.php?page=subMenu&menuSelected='.$menuSelected.'&botSelected='.$botSelected.'" method="post">';
 
             //Sub Menu Name Form Group Begin Here
             echo '<div class="form-group ';
