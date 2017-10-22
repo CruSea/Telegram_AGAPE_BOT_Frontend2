@@ -16,8 +16,9 @@
         $valid=true;
         $validMenu = true;
         $validSub = true;
-        
 
+        $delete= null;
+        $IDTempo = null;
         //Getting $page From Global _GET Variable
         if(!empty($_GET['page']))
         {
@@ -34,6 +35,29 @@
             $menuSelected=$_REQUEST['menuSelected'];
         }
 
+        if(!empty($_GET['delete']))
+        {
+            $delete=$_REQUEST['delete'];
+        }
+
+        if(!empty($_GET['IDTempo']))
+        {
+            $IDTempo=$_REQUEST['IDTempo'];
+        }
+
+        if($delete=='bot')
+        {
+
+            $api->delete_Bot($IDTempo,$connection);
+        }
+        else if($delete=='menu')
+        {
+            $api->delete_Menu($IDTempo,$connection);
+        }
+        else if($delete=='sub')
+        {
+            $api->delete_Sub_Menu($IDTempo,$connection);
+        }
         
         //Getting $startrow from Global _GET variable
         if (!isset($_GET['startrow']) or !is_numeric($_GET['startrow'])) 
@@ -50,26 +74,35 @@
             if($page=='menu')
             {
                 // keep Track Validation Errors
-                echo $botSelected;
                 $botID = $api->get_Bot_ID($botSelected,$connection);
-                echo $botID;
                 $menuNameError = null;
                 $menuDescError = null;
+                $starterError = null;
                 // Keep Track Form Values
                 $menuName = trim($_POST['menuName']);
                 $menuDesc = trim($_POST['menuDesc']);
+                $starter = trim($_POST['starter']);
                 //Validate Forum Title
                 if (empty($menuName)) 
                 {
                     $menuNameError = 'Please Enter Menu Name!';
                     $validMenu = false;
                 }
+                 if (empty($starter)) 
+                {
+                    $starterError = 'Please Select Menu Type';
+                    $validMenu = false;
+                }
                 //Insert Data In To Forums Table
                 if ($validMenu) 
                 {
-                    $sql = "INSERT INTO Menus (Bot_ID,Name,Description) VALUES (?,?,?)";
+                    if($starter == '2')
+                    {
+                        $starter = '0';
+                    }
+                    $sql = "INSERT INTO Menus (Bot_ID,Name,Description,Is_Starter) VALUES (?,?,?,?)";
                     $q = $connection->prepare($sql);
-                    $q->execute(array($botID,$menuName,$menuDesc));
+                    $q->execute(array($botID,$menuName,$menuDesc,$starter));
                     header("Location: index.php?page=viewMenu&botSelected=".$botSelected."");
                 }
             }
@@ -246,6 +279,7 @@
             echo '<th>NO.</th>';
             echo '<th>Bot Name</th>';
             echo '<th>Token</th>';
+            echo '<th>Description</th>';
             echo '<th>Actions</th>';
             echo '</tr>';
             echo '</thead>';//The End Of Table Header
@@ -255,12 +289,15 @@
             {
             echo '<tr>';
             echo '<td width=50>'. $no. '</td>';
-            echo '<td width=250>'.$row['Name'].'</td>';
-            echo '<td>'.$row['Token'].'</td>';
+            echo '<td width=150>'.$row['Name'].'</td>';
+            echo '<td width=150>'.$row['Token'].'</td>';
+            echo '<td>'.$row['Description'].'</td>';
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
-            echo '<td width=150 class="text-center">';
+            echo '<td width=180 class="text-center">';
             echo '<a class="btn btn-default" href="index.php?page=viewMenu&botSelected='.$row['Name'].'">Menus</a>';
+            echo ' ';
+            echo '<a class="btn btn-danger" href="index.php?page=bots&IDTempo='.$row['Bot_ID'].'&delete=bot">-Remove</a>';
             echo '</td>';
             echo '</tr>';
             
@@ -276,12 +313,12 @@
             
             //Go To Next
             if($count>$startrow+5)
-            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=bots">Next</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=bots">Next >></a>';
             echo '  ';
             //Go To Previous
             $prev = $startrow - 5;
             if ($prev >= 0)
-            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=bots">Previous</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=bots"><< Previous </a>';
         }
         else if($page=='viewMenu'||$page=='addMenu')
         {
@@ -296,6 +333,7 @@
             echo '<th>NO.</th>';
             echo '<th>Bot</th>';
             echo '<th>Menu Name</th>';
+            echo '<th>Description</th>';
             echo '<th>Actions</th>';
             echo '</tr>';
             echo '</thead>';//The End Of Table Header
@@ -304,13 +342,16 @@
             //Using foreach loop
             {
             echo '<tr>';
-            echo '<td width=2>'. $no. '</td>';
-            echo '<td width=250>'.$api->get_Bot_Name($row['Bot_ID'],$connection).'</td>';
-            echo '<td>'.$row['Name'].'</td>';
+            echo '<td width=50>'. $no. '</td>';
+            echo '<td width=150>'.$api->get_Bot_Name($row['Bot_ID'],$connection).'</td>';
+            echo '<td width=150>'.$row['Name'].'</td>';
+            echo '<td>'.$row['Description'].'</td>';
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
-            echo '<td width=150 class="text-center">';
+            echo '<td width=200 class="text-center">';
             echo '<a class="btn btn-default" href="index.php?page=viewSubMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'">Sub Menus</a>';
+            echo ' ';
+            echo '<a class="btn btn-danger" href="index.php?page=viewMenu&IDTempo='.$row['Menu_ID'].'&botSelected='.$botSelected.'&delete=menu">-Remove</a>';
             echo '</td>';
             echo '</tr>';
             
@@ -323,12 +364,12 @@
             echo '</table>';//The End of table
 
             if($count>$startrow+5)
-            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=viewMenu&botSelected='.$botSelected.'">Next</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=viewMenu&botSelected='.$botSelected.'">Next >></a>';
             echo '  ';
             //Go To Previous
             $prev = $startrow - 5;
             if ($prev >= 0)
-            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=viewMenu&botSelected='.$botSelected.'">Previous</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=viewMenu&botSelected='.$botSelected.'"><< Previous</a>';
             
         }
         else if($page=='viewSubMenu'||$page=='addSubMenu')
@@ -344,6 +385,7 @@
             echo '<th>Name</th>';
             echo '<th>Menu</th>';
             echo '<th>Replay Menu</th>';
+            echo '<th>Content</th>';
             echo '<th>Actions</th>';
             echo '</tr>';
             echo '</thead>';//The End Of Table Header
@@ -355,11 +397,12 @@
             echo '<td width=2>'. $no.'</td>';
             echo '<td width=100>'.$row['Name'].'</td>';
             echo '<td width=150>'.$api->get_Menu_Name($row['Menu_ID'],$connection).'</td>';
-            echo '<td>'.$api->get_Menu_Name($row['Replay'],$connection).'</td>';
+            echo '<td width=150>'.$api->get_Menu_Name($row['Replay'],$connection).'</td>';
+            echo '<td >'.$row['Content'].'</td>';
             //Possible Action Buttons For New,Ignored And Blocked Forums
             
-            echo '<td width=150 class="text-center">';
-            echo '<a class="btn btn-default" href="index.php?page=viewMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'">View Content</a>';
+            echo '<td width=100 class="text-center">';
+            echo '<a class="btn btn-danger" href="index.php?page=viewSubMenu&menuSelected='.$row['Name'].'&botSelected='.$botSelected.'&IDTempo='.$row['Sub_Menu_ID'].'&delete=sub">-Remove</a>';
             echo '</td>';
             echo '</tr>';
             
@@ -372,12 +415,12 @@
             echo '</table>';//The End of table
 
             if($count>$startrow+5)
-            echo '<a class="btn btn-info" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=viewSubMenu&botSelected='.$botSelected.'">Next</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.($startrow+5).'&page=viewSubMenu&botSelected='.$botSelected.'&menuSelected='.$menuSelected.'">Next >></a>';
             echo '  ';
             //Go To Previous
             $prev = $startrow - 5;
             if ($prev >= 0)
-            echo '<a class="btn btn-success" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=viewSubMenu&botSelected='.$botSelected.'">Previous</a>';
+            echo '<a class="btn btn-default" href="'.$_SERVER['PHP_SELF'].'?startrow='.$prev.'&page=viewSubMenu&botSelected='.$botSelected.'&menuSelected='.$menuSelected.'"><< Previous</a>';
         }
         //Forum Successfully Suspended Message
        
@@ -392,7 +435,7 @@
             </script>";
         }
 
-         if(!$valid||$page=='addMenu')
+         if(!$validMenu||$page=='addMenu')
         {
             echo "<script type='text/javascript'>
             $(document).ready(function(){
@@ -400,7 +443,7 @@
             });
             </script>";
         }
-         if(!$valid||$page=='addSubMenu')
+         if(!$validSub||$page=='addSubMenu')
         {
             echo "<script type='text/javascript'>
             $(document).ready(function(){
@@ -409,14 +452,7 @@
             </script>";
         }
 
-        if($page=='added')
-        {
-            echo "<script type='text/javascript'>
-            $(document).ready(function(){
-            $('#messageModal').modal('show');
-            });
-            </script>";
-        }
+
         ?>
         
         <!--Add New Bot Modal Begin Here-->
@@ -431,7 +467,7 @@
         <span aria-hidden="true">&times;</span>
         <span class="sr-only">Close</span>
         </button>
-        <h3 class="modal-title" id="myModalLabel" >Add New Bot</h3>
+        <h4 class="modal-title" id="myModalLabel" >Add New Bot</h4>
         </div>
         <!--The End Of Modal Header-->
         <!--The Beginning Of Modal Body-->
@@ -478,7 +514,7 @@
             //Submit Form Group Begin Here
             echo '<div class="form-group">';
             echo '<div class="col-md-offset-3 col-md-4">';
-            echo '<button type="submit" class="btn btn-success">Register Bot</button>';
+            echo '<button type="submit" class="btn btn-default">Register Bot</button>';
             echo '</div>';
             echo '</div>';
             //Submit Form Group End Here
@@ -488,7 +524,7 @@
         <!--Add New Bot Form End Here-->
         <!--The Beginning Of Modal Footer-->
         <div class="modal-footer">
-        <button type="button" class="btn btn-default"data-dismiss="modal">Close</button>
+        <!--<button type="button" class="btn btn-default"data-dismiss="modal">Close</button>-->
         </div>
         <!--The End Of Modal Footer-->
         </div>
@@ -512,7 +548,7 @@
         <span aria-hidden="true">&times;</span>
         <span class="sr-only">Close</span>
         </button>
-        <h3 class="modal-title" id="myModalLabel" >Add New Menu</h3>
+        <h4 class="modal-title" id="myModalLabel" >Add New Menu</h4>
         </div>
         <!--The End Of Modal Header-->
         <!--The Beginning Of Modal Body-->
@@ -544,10 +580,25 @@
             echo '</div>';
             //Description form Group End Here
 
+            echo '<div class="form-group ';
+            echo !empty($starterError)?'has-error':'';
+            echo '">';
+            echo '<label class="control-label col-md-3" for="starter">IS Starter Menu?</label>';
+            echo '<div class="dropdown col-md-6">';
+            echo '<select class="form-control" name="starter">';
+            echo '<option value="2">Default</option>';
+            echo '<option value="1">Starter</option>';
+            echo '</select>';
+            echo '</div>';
+            if (!empty($starterError)): 
+            echo $starterError;
+            endif; 
+            echo '</div>';
+
             //Submit Form Group Begin Here
             echo '<div class="form-group">';
             echo '<div class="col-md-offset-3 col-md-4">';
-            echo '<button type="submit" class="btn btn-success">Register Menu</button>';
+            echo '<button type="submit" class="btn btn-default">Register Menu</button>';
             echo '</div>';
             echo '</div>';
             //Submit Form Group End Here
@@ -557,7 +608,7 @@
         <!--Add New Bot Form End Here-->
         <!--The Beginning Of Modal Footer-->
         <div class="modal-footer">
-        <button type="button" class="btn btn-default"data-dismiss="modal">Close</button>
+        <!--<button type="button" class="btn btn-default"data-dismiss="modal">Close</button>-->
         </div>
         <!--The End Of Modal Footer-->
         </div>
@@ -581,7 +632,7 @@
         <span aria-hidden="true">&times;</span>
         <span class="sr-only">Close</span>
         </button>
-        <h3 class="modal-title" id="myModalLabel" >Add Sub Menu</h3>
+        <h4 class="modal-title" id="myModalLabel" >Add Sub Menu</h4>
         </div>
         <!--The End Of Modal Header-->
         <!--The Beginning Of Modal Body-->
@@ -618,8 +669,8 @@
             }
             echo '</select>';
             echo '</div>';
-            if (!empty($gradeLevelError)): 
-            echo $gradeLevelError;
+            if (!empty($replayError)): 
+            echo $replayError;
             endif; 
             echo '</div>';
             //Replay Form Group End Here
@@ -640,7 +691,7 @@
             //Submit Form Group Begin Here
             echo '<div class="form-group">';
             echo '<div class="col-md-offset-3 col-md-4">';
-            echo '<button type="submit" class="btn btn-success">Register Sub Menu</button>';
+            echo '<button type="submit" class="btn btn-default">Register Sub Menu</button>';
             echo '</div>';
             echo '</div>';
             //Submit Form Group End Here
@@ -650,7 +701,7 @@
         <!--Add New Bot Form End Here-->
         <!--The Beginning Of Modal Footer-->
         <div class="modal-footer">
-        <button type="button" class="btn btn-default"data-dismiss="modal">Close</button>
+        <!--<button type="button" class="btn btn-default"data-dismiss="modal">Close</button>-->
         </div>
         <!--The End Of Modal Footer-->
         </div>
@@ -687,7 +738,7 @@
         <!--End of add new forum form-->
         <!--The Beginning Of Modal Footer-->
         <div class="modal-footer">
-        <button type="button" class="btn btn-default"data-dismiss="modal">Close</button>
+        <!--<button type="button" class="btn btn-default"data-dismiss="modal">Close</button>-->
         </div>
         <!--The End Of Modal Footer-->
         </div>
