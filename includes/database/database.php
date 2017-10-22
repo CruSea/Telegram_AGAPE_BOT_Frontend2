@@ -6,7 +6,7 @@ class Database
 	private static $dbName = 'telegrambots';
     private static $dbHost = 'localhost' ;
     private static $dbUsername = 'root';
-    private static $dbUserPassword = '';
+    private static $dbUserPassword = 'passnegarit';
     private static $cont  = null;
     public function __construct() {
         die('Init function is not allowed');
